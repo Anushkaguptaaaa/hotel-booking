@@ -130,5 +130,4 @@ const RoomDetails = () => {
     </div>
   )
 }
-
 export default RoomDetails
