@@ -81,12 +81,45 @@ export const getRooms = async (req, res) => {
 // GET /api/rooms/owner
 export const getOwnerRooms = async (req, res) => {
   try {
+    console.log("=== Get owner rooms API called ===");
+    console.log("User ID:", req.user._id);
+    console.log("User object:", req.user);
+    
+    // First check all hotels and users for debugging
+    const allHotels = await Hotel.find({}).populate('owner');
+    console.log("All hotels in database:");
+    allHotels.forEach(hotel => {
+      console.log(`Hotel: ${hotel.name}, Owner ID: ${hotel.owner._id}, Owner Email: ${hotel.owner.email}`);
+    });
+    
     const hotelData = await Hotel.findOne({ owner: req.user._id });
-    const rooms = await Room.find({ hotel: hotelData._id.toString() }).populate("hotel");
+    console.log("Hotel found for owner rooms:", hotelData ? "Yes" : "No");
+    
+    if (hotelData) {
+      console.log("Found hotel:", hotelData.name, "ID:", hotelData._id);
+    }
+    
+    if (!hotelData) {
+      console.log("No hotel found for owner rooms");
+      return res.json({ 
+        success: false, 
+        message: "No hotel found. Please register a hotel first.",
+        needsHotelRegistration: true 
+      });
+    }
+    
+    const rooms = await Room.find({ hotel: hotelData._id }).populate("hotel");
+    console.log("Rooms found:", rooms.length);
+    console.log("Room details:", rooms.map(r => ({ 
+      id: r._id, 
+      type: r.roomType, 
+      hotel: r.hotel.name,
+      available: r.isAvailable 
+    })));
+    
     res.json({ success: true, rooms });
   } catch (error) {
-    console.log(error);
-    
+    console.log("Error in getOwnerRooms:", error);
     res.json({ success: false, message: error.message });
   }
 };
