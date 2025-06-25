@@ -6,11 +6,35 @@ import { v2 as cloudinary } from "cloudinary";
 // POST /api/rooms
 export const createRoom = async (req, res) => {
   try {
+    console.log("=== Create room API called ===");
+    console.log("User object:", req.user);
+    console.log("User ID from req.user._id:", req.user._id);
+    console.log("User role:", req.user.role);
+    
     const { roomType, pricePerNight, amenities } = req.body;
 
-    const hotel = await Hotel.findOne({ owner: req.auth.userId });
+    // Check all hotels first
+    const allHotels = await Hotel.find({});
+    console.log("All hotels in database:");
+    allHotels.forEach(hotel => {
+      console.log(`Hotel: ${hotel.name}, Owner: ${hotel.owner}`);
+    });
 
-    if (!hotel) return res.json({ success: false, message: "No Hotel found" });
+    const hotel = await Hotel.findOne({ owner: req.user._id });
+    console.log("Hotel found for user:", hotel ? "Yes" : "No");
+    
+    if (hotel) {
+      console.log("Found hotel:", hotel.name);
+    } else {
+      console.log("No hotel found for owner:", req.user._id);
+      // Let's see if there's a hotel for this user with string comparison
+      const hotelByString = await Hotel.findOne({ owner: req.user._id.toString() });
+      console.log("Hotel found with string conversion:", hotelByString ? "Yes" : "No");
+    }
+
+    if (!hotel) {
+      return res.json({ success: false, message: "No Hotel found for your account. Please register a hotel first." });
+    }
 
     // upload images to cloudinary
     const uploadImages = req.files.map(async (file) => {
@@ -57,7 +81,7 @@ export const getRooms = async (req, res) => {
 // GET /api/rooms/owner
 export const getOwnerRooms = async (req, res) => {
   try {
-    const hotelData = await Hotel.findOne({ owner: req.auth.userId });
+    const hotelData = await Hotel.findOne({ owner: req.user._id });
     const rooms = await Room.find({ hotel: hotelData._id.toString() }).populate("hotel");
     res.json({ success: true, rooms });
   } catch (error) {
