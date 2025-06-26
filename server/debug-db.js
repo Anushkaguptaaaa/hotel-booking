@@ -35,7 +35,7 @@ const debugDatabase = async () => {
       }
     });
     rooms.forEach(room => {
-      console.log(`Room: ${room.roomType}, Hotel: ${room.hotel.name}, Owner: ${room.hotel.owner.email}, Available: ${room.isAvailable}`);
+      console.log(`Room ID: ${room._id}, Room: ${room.roomType}, Hotel: ${room.hotel.name}, Owner: ${room.hotel.owner.email}, Available: ${room.isAvailable}`);
     });
 
     console.log(`\nTotal Users: ${users.length}`);
