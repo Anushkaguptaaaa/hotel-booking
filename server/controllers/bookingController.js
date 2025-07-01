@@ -1,3 +1,4 @@
+import transporter from "../configs/nodemailer.js";
 import Booking from "../models/Booking.js";
 import Hotel from "../models/Hotel.js";
 import Room from "../models/Room.js";
@@ -73,6 +74,37 @@ export const createBooking = async (req, res) => {
       checkOutDate,
       totalPrice,
     })
+
+    console.log('Preparing to send booking confirmation email...');
+    console.log('User email:', req.user.email);
+    console.log('SMTP configured:', process.env.SMTP_USER ? 'Yes' : 'No');
+
+    const mailOptions = {
+      from: process.env.SENDER_EMAIL || process.env.SMTP_USER,
+      to: req.user.email,
+      subject: "Booking Confirmation",
+      html: `<h1>Booking Confirmed</h1>
+             <p>Thank you for booking with us!</p>
+             <p>Hotel: ${roomData.hotel.name}</p>
+             <p>Room Type: ${roomData.roomType}</p>
+             <p>Check-In Date: ${new Date(checkInDate).toDateString()}</p>
+             <p>Check-Out Date: ${new Date(checkOutDate).toDateString()}</p>
+             <p>Total Price: $${totalPrice}</p>`
+    };
+
+    try {
+      const emailResult = await transporter.sendMail(mailOptions);
+      console.log('Booking confirmation email sent successfully to:', req.user.email);
+      console.log('Email result:', emailResult.messageId);
+    } catch (emailError) {
+      console.error('Failed to send booking confirmation email:', emailError);
+      console.error('Email error details:', {
+        code: emailError.code,
+        command: emailError.command,
+        response: emailError.response
+      });
+      // Don't fail the booking if email fails
+    }
 
     res.json({ success: true, message: "Booking created successfully" });
 
