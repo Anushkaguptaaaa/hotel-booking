@@ -37,6 +37,20 @@ const MyBookings = () => {
           fetchUserBookings();
       }
   }, [user]);
+
+  // Auto-refresh bookings when component mounts (useful after payment)
+  useEffect(() => {
+      const urlParams = new URLSearchParams(window.location.search);
+      const fromPayment = urlParams.get('payment');
+      
+      if (fromPayment === 'success' && user) {
+          console.log('Detected payment success, refreshing bookings...');
+          // Wait a moment for webhook to process, then refresh
+          setTimeout(() => {
+              fetchUserBookings();
+          }, 2000);
+      }
+  }, [user]);
   
       const handlePayment = async (bookingId) => {
           try {

@@ -11,15 +11,21 @@ import roomRouter from './routes/roomRoutes.js';
 import bookingRouter from './routes/bookingRoutes.js';
 import { debugUserState } from './controllers/debugController.js';
 import { protect as authMiddleware } from './middleware/authMiddleware.js';
+import { stripeWebhooks } from './controllers/stripeWebhooks.js';
 
 connectDB()
 connectCloudinary();
 
 const app = express();
 app.use(cors());
+
+// Stripe webhook endpoint (must be before express.json() middleware)
+app.post('/api/stripe/webhook', express.raw({ type: 'application/json' }), stripeWebhooks);
+
 //middleware
 app.use(express.json());
 app.use(clerkMiddleware());
+
 //API TO LISTEN FOR CLERK WEBHOOKS
 app.use("/api/clerk",clerkWebhooks)
 
