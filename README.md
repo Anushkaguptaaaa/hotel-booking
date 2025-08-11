@@ -1,1 +1,1 @@
-hotel booking site using clerk
+This is a comprehensive hotel booking platform enabling travelers to reserve rooms seamlessly, while hotel owners can efficiently manage their property listings and bookings. The tech stack combines React for the frontend, Node/Express for the backend, MongoDB for persistent data, and integrates modern services for authentication, payments, and media management.
